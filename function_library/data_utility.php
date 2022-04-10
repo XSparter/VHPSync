@@ -1,35 +1,29 @@
 <?php
-function write_php_ini($array, $file)
-{
-    $res = array();
-    foreach($array as $key => $val)
-    {
-        if(is_array($val))
-        {
-            $res[] = "[$key]";
-            foreach($val as $skey => $sval) $res[] = "$skey = ".(is_numeric($sval) ? $sval : '"'.$sval.'"');
-        }
-        else $res[] = "$key = ".(is_numeric($val) ? $val : '"'.$val.'"');
-    }
-    safefilerewrite($file, implode("\r\n", $res));
+session_start();
+include "../settings.php";
+global $DatabaseName_DB;
+global $Server_DB;
+global $Password_DB;
+global $Username_DB;
+global $file_location;
+$dbconnection = mysqli_connect($Server_DB, $Username_DB, $Password_DB, $DatabaseName_DB);
+$identification_code = $_GET['video_code'];
+$ip_session = $_GET['sessionip'];
+$timeplaycode = $_GET['timeplaycode'];
+$query = 'SELECT `counter`, `file_name`, `identificator` FROM `vhp_file_list` WHERE identificator=' . $identification_code;
+$query_execution = mysqli_query($dbconnection, $query);
+$row = mysqli_fetch_array($query_execution);
+$counter[] = $row[0];
+$file_name[] = $row[1];
+$identificator[] = $row[2]; //convert database output to multiple array
+if($_GET['command'] == "put"){
+echo($file_location . "/" . $file_name[0]);
+$query = 'UPDATE `session` SET `file_play_code`="'.$identification_code .'",`time_play_code`="0" WHERE ip_session="'.$ip_session.'"';}
+else if($_GET['command'] == "update"){
+    $query='UPDATE `session` SET `time_play_code`= '.$timeplaycode.' WHERE ip_session="'.$ip_session.'"';
 }
+$query_execution = mysqli_query($dbconnection, $query);
 
-function safefilerewrite($fileName, $dataToSave)
-{    if ($fp = fopen($fileName, 'w'))
-{
-    $startTime = microtime(TRUE);
-    do
-    {            $canWrite = flock($fp, LOCK_EX);
-        // If lock not obtained sleep for 0 - 100 milliseconds, to avoid collision and CPU load
-        if(!$canWrite) usleep(round(rand(0, 100)*1000));
-    } while ((!$canWrite)and((microtime(TRUE)-$startTime) < 5));
 
-    //file was locked so now we can store information
-    if ($canWrite)
-    {            fwrite($fp, $dataToSave);
-        flock($fp, LOCK_UN);
-    }
-    fclose($fp);
-}
 
-}
+?>
