@@ -1,9 +1,0 @@
-.file_select {
-
-}
-.file_select:hover {
-    color: red;
-    animation-duration: 0.5s;
-    cursor: pointer;
-    font-weight: bold;
-}

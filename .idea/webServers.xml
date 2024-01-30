@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="c2c223b5-92dd-4976-ad0d-04748bc62c16" name="ftproyal" url="http://ftp.profumeriaroyal.it/vhpsync">
+        <fileTransfer rootFolder="/www.profumeriaroyal.it/vhpsync" host="ftp.profumeriaroyal.it" port="21">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
