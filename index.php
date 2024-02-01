@@ -2,69 +2,96 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <title>Video Management</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+        }
+        a.dependent {
+            color: red;
+        }
+        a.master {
+            color: green;
+        }
+    </style>
 </head>
 <body>
-<h1>Video Player</h1>
-<div>
-    <?php
-    // Funzione per ottenere il tempo di riproduzione dal file .ini
-    function getPlaybackTimeFromIni($videoName) {
-        $iniPath = 'videos/' . $videoName . '.ini';
-        if (file_exists($iniPath)) {
-            $iniData = parse_ini_file($iniPath);
-            if (isset($iniData['playback_time'])) {
-                return intval($iniData['playback_time']);
+<?php
+$videoFolder = "videos/";
+$mode = isset($_GET['mode']) ? $_GET['mode'] : '';
+
+// Scansiona la cartella dei video
+$files = scandir($videoFolder);
+
+// Verifica ogni file nella cartella
+foreach ($files as $file) {
+    // Ignora le directory correnti e precedenti
+    if ($file != "." && $file != "..") {
+        // Verifica se il file è un video
+        $file_parts = pathinfo($file);
+        if ($file_parts['extension'] == "mp4") {
+            // Stampa a video la lista dei file con due link ipertestuali
+            echo "<p>";
+            echo $file;
+            echo " <a href='index.php?videoname=$file&mode=dependent' class='dependent'>Dipendente</a>";
+            echo " <a href='index.php?videoname=$file&mode=master' class='master'>Master</a>";
+            echo "</p>";
+        }
+    }
+}
+
+// Se filename contiene qualcosa, crea un player video HTML5
+if (isset($_GET['videoname'])) {
+    $videoName = $_GET['videoname'];
+    echo "<video id='videoPlayer' controls><source src='$videoFolder$videoName' type='video/mp4'></video>";
+}
+?>
+<script>
+    // Crea una variabile JavaScript e assegna il valore della variabile PHP mode
+    var mode = "<?php echo $mode; ?>";
+    var videoPlayer = document.getElementById('videoPlayer');
+
+    if (mode == "master") {
+        setInterval(memorizzaStatoPlayer, 1000);
+    } else if (mode == "dependent") {
+        setInterval(sincronizzaStatoPlayer, 1000);
+    }
+
+    function memorizzaStatoPlayer() {
+        var tempoDiRiproduzione = videoPlayer.currentTime;
+        var isPaused = videoPlayer.paused;
+        var statoPlayer = tempoDiRiproduzione + "##" + isPaused;
+
+        // Memorizza lo stato del player in un file .ini
+        // Nota: Questa parte del codice richiede una chiamata AJAX a un file PHP per scrivere effettivamente il file .ini
+        // Poiché JavaScript non può scrivere direttamente i file sul server
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "iniupdater.php?statoPlayer=" + encodeURIComponent(statoPlayer), true);
+        xhr.send();
+    }
+
+    function sincronizzaStatoPlayer() {
+        // Fai una chiamata AJAX a un file PHP che legge il file .ini e restituisce lo stato del player
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "iniupdater.php?getStatoPlayer=true", true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                var statoPlayer = xhr.responseText.split('##');
+                var tempoDiRiproduzione = parseFloat(statoPlayer[0]);
+                var isPaused = statoPlayer[1] == 'true';
+
+                // Sincronizza lo stato del player locale con lo stato del player nel file .ini
+                videoPlayer.currentTime = tempoDiRiproduzione;
+                if (isPaused) {
+                    videoPlayer.pause();
+                } else {
+                    videoPlayer.play();
+                }
             }
         }
-        return 0; // Ritorna 0 se il file .ini non esiste o non contiene il tempo di riproduzione
+        xhr.send();
     }
-
-    // Verifica se il parametro videoname è stato passato
-    if (isset($_GET['videoname'])) {
-        // Recupera il nome del video dalla query string
-        $videoName = $_GET['videoname'];
-
-        // Costruisci il percorso del file video
-        $videoPath = 'videos/' . $videoName . '.mp4';
-
-        // Verifica se il file video esiste
-        if (file_exists($videoPath)) {
-            // Ottieni il tempo di riproduzione dal file .ini
-            $playbackTime = getPlaybackTimeFromIni($videoName);
-
-            // Stampare il video con il tempo di riproduzione ottenuto
-            echo "<video id='videoPlayer' controls autoplay>";
-            echo "<source src='$videoPath' type='video/mp4'>";
-            echo "Il tuo browser non supporta la riproduzione di video HTML5.";
-            echo "</video>";
-
-            // Script JavaScript per aggiornare il file .ini
-            echo "<script>";
-            echo "$(document).ready(function() {";
-            echo "    var video = document.getElementById('videoPlayer');";
-            echo "    setInterval(function() {";
-            echo "        var currentTime = Math.floor(video.currentTime);";
-            echo "        $.ajax({";
-            echo "            type: 'POST',";
-            echo "            url: 'update_ini.php',";
-            echo "            data: {";
-            echo "                videoname: '$videoName',";
-            echo "                playback_time: currentTime";
-            echo "            }";
-            echo "        });";
-            echo "    }, 1000);"; // Ogni secondo
-            echo "});";
-            echo "</script>";
-        } else {
-            echo "Il video non esiste.";
-        }
-    } else {
-        echo "Il parametro videoname non è stato fornito.";
-    }
-    ?>
-</div>
+</script>
 </body>
 </html>

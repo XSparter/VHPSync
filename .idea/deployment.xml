@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="ftproyal" remoteFilesAllowedToDisappearOnAutoupload="false" showNewOnSourceInSync="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="sparterwan3" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false" showNewOnSourceInSync="false">
+    <option name="confirmBeforeUploading" value="false" />
     <serverData>
       <paths name="ftproyal">
         <serverdata>
@@ -9,6 +10,14 @@
           </mappings>
         </serverdata>
       </paths>
+      <paths name="sparterwan3">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
     </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>
